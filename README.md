@@ -5,7 +5,7 @@ A telegram bot that gives COVID 19 update
 ## Requirements:
 
 - Telegram bot API token & bot owner ID
-- A postgress db with creditials
+- A Postgres DB with credentials
 
 ## How to deploy
 
@@ -16,11 +16,16 @@ A telegram bot that gives COVID 19 update
 ```bash
 $ cp creds_local.sample creds_local.py
 ```
+
+- Update `creds_local.py` 
+
 - Run `deploy.sh`
+
 ```bash
 $ chmod +x deploy.sh
 $ ./deploy.sh
 
-#or
+# or
 
 $ bash deploy.sh
+```
