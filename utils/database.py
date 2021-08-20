@@ -17,7 +17,7 @@ my_pass = cred.USER_PASS
 my_creden = "dbname=%s user=%s host=%s password=%s" % (my_db,my_user,my_host,my_pass)
 api_token = cred.API_TOKEN
 
-# create table
+# connect db
 def connectdb():
     up.uses_netloc.append("postgres")
     connection = psycopg2.connect(my_creden)
@@ -30,7 +30,8 @@ def create_table(connection, curs):
     connection.commit()
     doesTableExist = curs.fetchone()
     if not doesTableExist[0]:
-        curs.execute("""CREATE TABLE ids (id varchar(30));""")
+        curs.execute("""CREATE TABLE ids (id varchar(30), notify varchar(30));""")
+        curs.execute("""CREATE TABLE logs (total varchar(50);""")
     connection.commit()
 
 
