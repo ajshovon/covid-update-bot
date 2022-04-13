@@ -5,8 +5,8 @@ load_dotenv(find_dotenv())
 
 class cred():
     API_TOKEN = os.getenv('API_TOKEN')
-    owner_id = os.getenv('OWNER_ID')
-    my_db = os.getenv('DB_NAME')
-    my_user = os.getenv('USER_NAME')
-    my_pass = os.getenv('USER_PASS')
-    my_host = os.getenv('HOST_NAME')
+    OWNER_ID = os.getenv('OWNER_ID')
+    DB_NAME = os.getenv('DB_NAME')
+    USER_NAME = os.getenv('USER_NAME')
+    USER_PASS = os.getenv('USER_PASS')
+    HOST_NAME = os.getenv('HOST_NAME')

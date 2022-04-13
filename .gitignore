@@ -1,3 +1,6 @@
 __pycache__
 venv
 creds_local.py
+__pycache__/*
+.env
+bah

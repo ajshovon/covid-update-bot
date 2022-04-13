@@ -4,8 +4,7 @@ import sys
 import os
 import telebot
 from utils import *
-from covid import Covid
-from math import floor
+import covid_bd
 
 def getConfig(name: str):
     return os.environ[name]
@@ -113,7 +112,9 @@ def send_message_ex(message):
     if adminfilter(message) or doesExistDB(message):
         chat_id = message.chat.id
         bot.send_message(chat_id, """\
-*To get covid update for Bangladesh, send a message like this:*\n`/update`\
+            This bot can get you COVID update for Bangladesh.\n\n\
+To get update, use these bot commands:\n`/update - Get Last 24h status\n/updateall - Get all status`\n\n\
+Data collected from `dghs.gov.bd` and `corona.gov.bd`.\
     """, parse_mode='Markdown')
     else:
         pass
@@ -137,12 +138,15 @@ def send_message_auth(message):
         if int(authID) not in db_ids:
             curs.execute("INSERT INTO IDS (ID) VALUES (%s)", [authID])
             connection.commit()
-            UserN = bot.get_chat(authID)
-            if (UserN.username == None):
-                displayName = "Supergroup " + UserN.title
-            else:
-                displayName = "["+"@" + str(UserN.username) + "](tg://user?id=" + \
-                    str(authID)+")"
+            try:
+                UserN = bot.get_chat(authID)
+                if (UserN.username == None):
+                    displayName = "Supergroup " + UserN.title
+                else:
+                    displayName = "[" + str(UserN.username) + "](tg://user?id=" + \
+                        str(authID)+")"
+            except:
+                displayName = "Privacy"
             show_ID = displayName + " added to authorized chats"
             bot.reply_to(message, show_ID, parse_mode='Markdown')
             updateAuthChatsList()
@@ -166,12 +170,15 @@ def send_message_authList(message):
         global authorized_chats
         DB_listt = authorized_chats
         for id in DB_listt:
-            UserN = bot.get_chat(id)
-            if (UserN.username == None):
-                displayName = UserN.title
-            else:
-                displayName = UserN.username
-            send_auth_ = send_auth_ + "["+"@" + str(displayName) + "](tg://user?id=" + \
+            try:
+                UserN = bot.get_chat(id)
+                if (UserN.username == None):
+                    displayName = UserN.title
+                else:
+                    displayName = UserN.username
+            except:
+                displayName = "Privacy"
+            send_auth_ = send_auth_ + "[" + str(displayName) + "](tg://user?id=" + \
                 str(id)+")" + " : " + "`"+str(id)+"`" + "\n"
         bot.send_message(chat_id, send_auth_, parse_mode='Markdown')
     else:
@@ -215,34 +222,59 @@ def send_message_stats(message):
 
 
 @ bot.message_handler(commands=['update'])
-
 def echo_message(message):
     if adminfilter(message) or doesExistDB(message):
-        covid_ = Covid("worldometers")
-        data = covid_.get_status_by_country_name("Bangladesh")
+        data = covid_bd.get_bd_data_24h_dghs()
         result = ""
-        result += f"Covid Status for *{data['country']}*\n\n"
-        result += f"*New Cases* : `{data['new_cases']}`\n"
-        result += f"*New Deaths* : `{data['new_deaths']}`\n\n"
-        result += f"**Critical** : `{data['critical']}`\n"
-        result += f"**Active** : `{data['active']}`\n"
-        result += f"**Confirmed** : `{data['confirmed']}`\n"
-        result += f"**Deaths** : `{data['deaths']}`\n"
-        result += f"**Recovered** : `{data['recovered']}`\n\n"
-        result += f"**Total Tests** : `{data['total_tests']}`\n"
-        po = data['population']
-        tt = data['total_tests']
-        ttpm = ( tt/po ) * 1000000
-        ttpm = floor(ttpm)
-        result += f"**Total Tests Per Million** : `{ttpm}`\n"
-        result += f"**Total Cases Per Million** : `{data['total_cases_per_million']}`\n"
-        result += (
-            f"**Total deaths per million** : `{data['total_deaths_per_million']}`\n"
-        )
-        result += f"**Population** : `{data['population']}`\n"
+        result += f"Last 24h Covid Status for *Bangladesh*\n\n"
+        result += f"*New Tests* : `{data[3]}`\n"
+        result += f"*New Cases* : `{data[0]}`\n"
+        result += f"*New Deaths* : `{data[2]}`\n"
+        result += f"*New Recoveries* : `{data[1]}`\n"
+        result += f"*Infection Rate* : `{data[4]}`%\n\n"
+        result += f"`Data collected from dghs.gov.bd`\n\n"
         bot.reply_to(message, result, parse_mode='Markdown')
     else:
         pass
+
+@ bot.message_handler(commands=['updateall'])
+def echo_message(message):
+    if adminfilter(message) or doesExistDB(message):
+        data = covid_bd.get_bd_data_24h_dghs()
+        result = ""
+        result += f"Covid Status for *Bangladesh*\n\n"
+        result += f"*Last 24 Hours*\n"
+        result += f"*New Tests* : `{data[3]}`\n"
+        result += f"*New Cases* : `{data[0]}`\n"
+        result += f"*New Deaths* : `{data[2]}`\n"
+        result += f"*New Recoveries* : `{data[1]}`\n"
+        result += f"*Infection Rate* : `{data[4]}`%\n\n"
+        data = covid_bd.get_bd_data_7days()
+        result += f"*Last 7 Days*\n"
+        result += f"*Tests* : `{data[3]}`\n"
+        result += f"*Cases* : `{data[0]}`\n"
+        result += f"*Deaths* : `{data[2]}`\n"
+        result += f"*Recoveries* : `{data[1]}`\n"
+        result += f"*Infection Rate* : `{data[4]}`%\n\n"
+        data = covid_bd.get_bd_data_month()
+        result += f"*Last 30 Days*\n"
+        result += f"*Tests* : `{data[3]}`\n"
+        result += f"*Cases* : `{data[0]}`\n"
+        result += f"*Deaths* : `{data[2]}`\n"
+        result += f"*Recoveries* : `{data[1]}`\n"
+        result += f"*Infection Rate* : `{data[4]}`%\n\n"
+        data = covid_bd.get_bd_data_total()
+        result += f"*Total*\n"
+        result += f"*Tests* : `{data[3]}`\n"
+        result += f"*Cases* : `{data[0]}`\n"
+        result += f"*Deaths* : `{data[2]}`\n"
+        result += f"*Recoveries* : `{data[1]}`\n"
+        result += f"*Infection Rate* : `{data[4]}`%\n\n"
+        result += f"`Data collected from dghs.gov.bd and corona.gov.bd`\n\n"
+        bot.reply_to(message, result, parse_mode='Markdown')
+    else:
+        pass
+
 
 
 bot.polling(print("Bot started..."))

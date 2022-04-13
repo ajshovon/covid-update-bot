@@ -9,7 +9,7 @@ else:
 
 
 # setup creds
-owner_id = cred.OWNER_ID
+owner_id = int(cred.OWNER_ID)
 my_db = cred.DB_NAME
 my_user = cred.USER_NAME
 my_host = cred.HOST_NAME
